@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Creator Studio</title>
+    <style>
+        :root {
+            /* Dark Theme (Default) */
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --primary: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --input-text: #fff;
+        }
+
+        [data-theme="light"] {
+            /* Light Theme */
+            --bg-dark: #f8fafc;
+            --bg-panel: #ffffff;
+            --primary: #2563eb;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --input-bg: #f1f5f9;
+            --input-text: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .logo-area {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .product-select {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .menu {
+            padding: 20px 10px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .menu-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 14px;
+        }
+
+        .menu-item {
+            padding: 12px 14px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(128, 128, 128, 0.1);
+            color: var(--text-main);
+        }
+
+        .menu-item.active {
+            background-color: var(--primary);
+            color: white !important;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Topbar */
+        .topbar {
+            height: 70px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .search-bar {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: var(--input-text);
+            width: 300px;
+            outline: none;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .theme-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .theme-btn:hover {
+            background-color: rgba(128, 128, 128, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Workspace */
+        .workspace {
+            padding: 40px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .workspace-section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .workspace-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .workspace-header {
+            margin-bottom: 30px;
+        }
+
+        .workspace-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .workspace-header p {
+            color: var(--text-muted);
+        }
+
+        /* UI Cards */
+        .card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .prompt-input {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            color: var(--input-text);
+            font-size: 16px;
+            resize: none;
+            height: 100px;
+            margin-bottom: 16px;
+            outline: none;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-item {
+            aspect-ratio: 1;
+            background-color: var(--bg-panel);
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        /* OCR Dropzone */
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 60px;
+            text-align: center;
+            color: var(--text-muted);
+            background-color: rgba(128, 128, 128, 0.05);
+            cursor: pointer;
+        }
+        .dropzone:hover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Text Format Tool */
+        .text-editor {
+            width: 100%;
+            height: 300px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            color: var(--input-text);
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo">⚡ Creator Studio</div>
+            <!-- Multiple Products Option -->
+            <select class="product-select" id="productDropdown">
+                <option value="all">All Products</option>
+                <option value="marketing">Marketing Suite</option>
+                <option value="video">Video Production</option>
+            </select>
+        </div>
+        <div class="menu">
+            <div class="menu-item tool-item active" data-product="all" data-target="section-landing" style="font-weight: bold;">🏠 Home</div>
+            
+            <div class="menu-label" style="margin-top: 25px;">Microservices Tools</div>
+            <div class="menu-item tool-item" data-product="marketing" data-target="section-text">📝 Text Formatting</div>
+            <div class="menu-item tool-item" data-product="marketing" data-target="section-image">🖼️ Image Generation</div>
+            <div class="menu-item tool-item" data-product="video" data-target="section-video">🎥 Video Editing</div>
+            <div class="menu-item tool-item" data-product="all" data-target="section-ocr">🔍 OCR Text Extract</div>
+            <div class="menu-item tool-item" data-product="marketing" data-target="section-post">📱 Post Generation</div>
+
+            <div class="menu-label" style="margin-top: 30px;">Library</div>
+            <div class="menu-item tool-item" data-product="all" data-target="section-files">📁 Shared Files (S3)</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        
+        <!-- Top Navigation -->
+        <div class="topbar">
+            <input type="text" class="search-bar" placeholder="Search projects or files...">
+            <div class="top-right">
+                <!-- Theme Toggle -->
+                <button class="theme-btn" id="themeToggle">
+                    <span id="themeIcon">☀️</span> Light Mode
+                </button>
+                <div class="user-profile">
+                    <span>🔔</span>
+                    <div class="avatar">IT</div>
+                    <span>Imhade</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Workspace -->
+        <div class="workspace">
+            
+            <!-- LANDING PAGE -->
+            <div class="workspace-section active" id="section-landing">
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">✨</div>
+                    <h1 style="font-size: 48px; font-weight: 800; margin-bottom: 16px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Create something great today</h1>
+                    <p style="font-size: 20px; color: var(--text-muted); max-width: 600px; margin: 0 auto 50px auto; line-height: 1.6;">Write, design, build, and so much more with AI tools for every task.</p>
+                    
+                    <div class="results-grid" style="text-align: left; max-width: 900px; margin: 0 auto; gap: 30px;">
+                        <div class="card tool-item-launcher" data-target="section-text" style="cursor: pointer; text-align: center; padding: 40px 20px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div style="font-size: 40px; margin-bottom: 15px;">📝</div>
+                            <h3>Text Formatting</h3>
+                            <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">Format, rewrite, and clean up your copy seamlessly.</p>
+                        </div>
+                        <div class="card tool-item-launcher" data-target="section-image" style="cursor: pointer; text-align: center; padding: 40px 20px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div style="font-size: 40px; margin-bottom: 15px;">🖼️</div>
+                            <h3>Image Gen</h3>
+                            <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">Generate high-quality images from text prompts.</p>
+                        </div>
+                        <div class="card tool-item-launcher" data-target="section-video" style="cursor: pointer; text-align: center; padding: 40px 20px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div style="font-size: 40px; margin-bottom: 15px;">🎥</div>
+                            <h3>Video Editor</h3>
+                            <p style="color: var(--text-muted); font-size: 14px; margin-top: 10px;">Cloud-based timeline editor for your video content.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IMAGE GENERATION -->
+            <div class="workspace-section" id="section-image">
+                <div class="workspace-header">
+                    <h1>Image Generation</h1>
+                    <p>Generate high-quality images using our AI microservice.</p>
+                </div>
+                <div class="card">
+                    <textarea class="prompt-input" placeholder="Describe the image you want to generate... (e.g., A futuristic city at sunset, cyberpunk style)"></textarea>
+                    <button class="btn-primary">Generate Image</button>
+                </div>
+                <div class="results-grid">
+                    <div class="result-item">Image Result 1</div>
+                    <div class="result-item">Image Result 2</div>
+                    <div class="result-item">Image Result 3</div>
+                    <div class="result-item">Image Result 4</div>
+                </div>
+            </div>
+
+            <!-- TEXT FORMATTING -->
+            <div class="workspace-section" id="section-text">
+                <div class="workspace-header">
+                    <h1>Text Formatting</h1>
+                    <p>Format, rewrite, and clean up your copy.</p>
+                </div>
+                <div class="card">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button class="btn-primary" style="background-color: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border);">Summarize</button>
+                        <button class="btn-primary" style="background-color: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border);">Fix Grammar</button>
+                        <button class="btn-primary" style="background-color: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border);">Make Professional</button>
+                    </div>
+                    <textarea class="text-editor" placeholder="Paste your raw text here..."></textarea>
+                    <div style="margin-top: 15px;">
+                        <button class="btn-primary">Process Text</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OCR -->
+            <div class="workspace-section" id="section-ocr">
+                <div class="workspace-header">
+                    <h1>OCR Text Extraction</h1>
+                    <p>Extract machine-readable text from scanned PDFs and Images.</p>
+                </div>
+                <div class="card">
+                    <div class="dropzone">
+                        <div style="font-size: 40px; margin-bottom: 10px;">📄</div>
+                        <h3>Drag & Drop your Image or PDF here</h3>
+                        <p style="margin-top: 10px; font-size: 14px;">or click to browse files</p>
+                    </div>
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button class="btn-primary">Extract Text</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIDEO EDITING -->
+            <div class="workspace-section" id="section-video">
+                <div class="workspace-header">
+                    <h1>Video Editing Workspace</h1>
+                    <p>Cloud-based video timeline editor microservice.</p>
+                </div>
+                <div class="card" style="text-align: center; padding: 60px;">
+                    <span style="font-size: 48px;">🎬</span>
+                    <h2 style="margin-top: 20px;">Video timeline and rendering engine</h2>
+                    <p style="margin-top: 10px;">Drag media from your shared files here.</p>
+                </div>
+            </div>
+
+            <!-- POST GENERATION -->
+            <div class="workspace-section" id="section-post">
+                <div class="workspace-header">
+                    <h1>Social Post Generation</h1>
+                    <p>Automatically generate social media posts across all platforms.</p>
+                </div>
+                <div class="card">
+                    <input type="text" class="prompt-input" style="height: 50px;" placeholder="Topic (e.g. 'New feature launch for our app')">
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <label><input type="checkbox" checked> Twitter</label>
+                        <label><input type="checkbox" checked> LinkedIn</label>
+                        <label><input type="checkbox"> Instagram</label>
+                    </div>
+                    <button class="btn-primary">Generate Posts</button>
+                </div>
+            </div>
+            
+            <!-- SHARED FILES -->
+            <div class="workspace-section" id="section-files">
+                <div class="workspace-header">
+                    <h1>Shared Library (S3 Bucket)</h1>
+                    <p>All files generated by microservices are saved here.</p>
+                </div>
+                <div class="results-grid">
+                    <div class="result-item" style="border: none; background-color: #1e40af; color: white;">cat_in_space.png</div>
+                    <div class="result-item" style="border: none; background-color: #047857; color: white;">extracted_text.txt</div>
+                    <div class="result-item" style="border: none; background-color: #be185d; color: white;">social_posts.json</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+        // 1. Theme Toggle Logic
+        const themeBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        let isLightMode = false;
+
+        themeBtn.addEventListener('click', () => {
+            isLightMode = !isLightMode;
+            if (isLightMode) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '🌙';
+                themeBtn.innerHTML = '<span id="themeIcon">🌙</span> Dark Mode';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeIcon.textContent = '☀️';
+                themeBtn.innerHTML = '<span id="themeIcon">☀️</span> Light Mode';
+            }
+        });
+
+        // 2. Tab Switching Logic
+        const menuItems = document.querySelectorAll('.menu-item[data-target]');
+        const workspaceSections = document.querySelectorAll('.workspace-section');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // If it's hidden, don't allow clicking
+                if (item.style.display === 'none') return;
+
+                // Remove active class from all menu items
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                // Add active class to clicked item
+                item.classList.add('active');
+
+                // Hide all sections
+                workspaceSections.forEach(sec => sec.classList.remove('active'));
+                
+                // Show target section
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // 2b. Launcher Cards logic (Home Page)
+        document.querySelectorAll('.tool-item-launcher').forEach(launcher => {
+            launcher.addEventListener('click', () => {
+                const targetId = launcher.getAttribute('data-target');
+                const targetMenuItem = document.querySelector(`.menu-item[data-target="${targetId}"]`);
+                if(targetMenuItem) targetMenuItem.click();
+            });
+        });
+
+        // 3. Product Switcher Logic (Filters the sidebar tools)
+        const productDropdown = document.getElementById('productDropdown');
+        const toolItems = document.querySelectorAll('.tool-item');
+
+        productDropdown.addEventListener('change', (e) => {
+            const selectedProduct = e.target.value;
+            let firstVisibleItem = null;
+
+            toolItems.forEach(item => {
+                const itemProduct = item.getAttribute('data-product');
+                
+                // Show if it matches selected product, OR if 'all' is selected, OR if the tool belongs to 'all'
+                if (selectedProduct === 'all' || itemProduct === selectedProduct || itemProduct === 'all') {
+                    item.style.display = 'flex';
+                    if (!firstVisibleItem) firstVisibleItem = item;
+                } else {
+                    item.style.display = 'none';
+                    item.classList.remove('active'); // ensure hidden ones aren't active
+                }
+            });
+
+            // Automatically switch workspace to the first visible tool in that product
+            if (firstVisibleItem) {
+                firstVisibleItem.click(); 
+            }
+        });
+
+        // 4. Image Generation Interactivity
+        const generateImgBtn = document.querySelector('#section-image .btn-primary');
+        const imgResultsGrid = document.querySelector('#section-image .results-grid');
+        generateImgBtn.addEventListener('click', () => {
+            const prompt = document.querySelector('#section-image .prompt-input').value;
+            if(!prompt) {
+                alert('Please enter a prompt first.');
+                return;
+            }
+            generateImgBtn.textContent = 'Generating...';
+            generateImgBtn.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                generateImgBtn.textContent = 'Generate Image';
+                generateImgBtn.style.opacity = '1';
+                
+                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+                let newHtml = '';
+                for(let i=1; i<=4; i++) {
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    newHtml += `<div class="result-item" style="background-color: ${color}; color: white; border: none; font-weight: bold;">Generated Image ${i}</div>`;
+                }
+                imgResultsGrid.innerHTML = newHtml;
+            }, 1500);
+        });
+
+        // 5. Text Formatting Interactivity
+        const textSectionBtns = document.querySelectorAll('#section-text .btn-primary');
+        const processBtn = textSectionBtns[textSectionBtns.length - 1];
+        const textEditor = document.querySelector('.text-editor');
+        
+        for(let i = 0; i < textSectionBtns.length - 1; i++) {
+            textSectionBtns[i].addEventListener('click', function() {
+                for(let j=0; j < textSectionBtns.length - 1; j++) {
+                    textSectionBtns[j].style.backgroundColor = 'var(--bg-panel)';
+                    textSectionBtns[j].style.color = 'var(--text-main)';
+                }
+                this.style.backgroundColor = 'var(--primary)';
+                this.style.color = 'white';
+            });
+        }
+
+        processBtn.addEventListener('click', () => {
+            if(!textEditor.value) {
+                alert('Please paste some text first.');
+                return;
+            }
+            processBtn.textContent = 'Processing...';
+            processBtn.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                processBtn.textContent = 'Process Text';
+                processBtn.style.opacity = '1';
+                textEditor.value = `[Processed & Enhanced via AI]\n\n` + textEditor.value;
+            }, 1000);
+        });
+
+        // 6. OCR Text Extraction Interactivity
+        const dropzone = document.querySelector('.dropzone');
+        const extractBtn = document.querySelector('#section-ocr .btn-primary');
+        
+        dropzone.addEventListener('click', () => {
+            dropzone.innerHTML = `<div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                                  <h3>Document_Scanned.pdf</h3>
+                                  <p style="margin-top: 10px; font-size: 14px;">Ready for extraction</p>`;
+            dropzone.style.borderColor = 'var(--primary)';
+            dropzone.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+        });
+        
+        extractBtn.addEventListener('click', () => {
+            if(!dropzone.innerHTML.includes('Ready')) {
+                alert('Please select a file to upload first.');
+                return;
+            }
+            extractBtn.textContent = 'Extracting...';
+            setTimeout(() => {
+                extractBtn.textContent = 'Extract Text';
+                alert('Text successfully extracted! You can find it in Shared Files.');
+            }, 1500);
+        });
+
+        // 7. Video Editing Interactivity
+        const videoDrop = document.querySelector('#section-video .card');
+        videoDrop.style.cursor = 'pointer';
+        videoDrop.addEventListener('click', () => {
+            if(videoDrop.innerHTML.includes('▶️')) return; // Already initialized
+            videoDrop.innerHTML = `
+                <div style="background-color: var(--input-bg); height: 300px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                    <span style="font-size: 64px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">▶️</span>
+                </div>
+                <div style="display: flex; gap: 5px; height: 80px; align-items: center; background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                    <div style="flex: 1; height: 100%; background-color: var(--primary); border-radius: 4px; opacity: 0.9;"></div>
+                    <div style="flex: 2; height: 100%; background-color: #10b981; border-radius: 4px; opacity: 0.9;"></div>
+                    <div style="width: 4px; height: 120%; background-color: #ef4444; border-radius: 2px;"></div>
+                    <div style="flex: 1.5; height: 100%; background-color: #f59e0b; border-radius: 4px; opacity: 0.9;"></div>
+                </div>
+            `;
+            videoDrop.style.padding = '24px';
+        });
+
+        // 8. Social Post Generation Interactivity
+        const generatePostBtn = document.querySelector('#section-post .btn-primary');
+        generatePostBtn.addEventListener('click', () => {
+            const topic = document.querySelector('#section-post .prompt-input').value;
+            if(!topic) {
+                alert('Please enter a topic first.');
+                return;
+            }
+            generatePostBtn.textContent = 'Generating...';
+            
+            setTimeout(() => {
+                generatePostBtn.textContent = 'Generate Posts';
+                const card = document.querySelector('#section-post .card');
+                
+                // Remove existing result if any
+                const existingResult = card.querySelector('.generated-post-result');
+                if (existingResult) existingResult.remove();
+
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'generated-post-result';
+                resultDiv.style.marginTop = '20px';
+                resultDiv.style.padding = '15px';
+                resultDiv.style.backgroundColor = 'var(--input-bg)';
+                resultDiv.style.borderRadius = '8px';
+                resultDiv.style.border = '1px solid var(--border)';
+                
+                const platforms = Array.from(document.querySelectorAll('#section-post input[type="checkbox"]:checked')).map(cb => cb.parentNode.textContent.trim());
+                
+                let html = '<strong>Generated Posts:</strong><br><br>';
+                platforms.forEach(platform => {
+                    html += `<div style="margin-bottom: 10px; padding: 10px; background: rgba(128,128,128,0.1); border-radius: 6px;">
+                        <span style="font-weight: bold; color: var(--primary);">${platform}:</span> 
+                        Excited to announce ${topic}! 🚀 Our team has been working hard on this. Check it out now! #Launch #Tech
+                    </div>`;
+                });
+                if(platforms.length === 0) {
+                    html += `<em>No platforms selected.</em>`;
+                }
+                
+                resultDiv.innerHTML = html;
+                card.appendChild(resultDiv);
+            }, 1500);
+        });
+
+    </script>
+</body>
+</html>
